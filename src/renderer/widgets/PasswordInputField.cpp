@@ -266,7 +266,9 @@ bool CPasswordInputField::draw(const SRenderData& data) {
 
     if (outThick > 0) {
         const auto OUTERROUND = roundingForBorderBox(outerBox, rounding, outThick);
-        g_pRenderer->renderBorder(outerBox, colorState.outer->value(), outThick, OUTERROUND, fade.a->value() * data.opacity);
+        CHyprColor borderCol = checkWaiting ? CHyprColor(1.0, 0.75, 0.0, 1.0) : 
+            (colorState.outer->value().m_vColors.empty() ? CHyprColor(1.0, 1.0, 1.0, 1.0) : colorState.outer->value().m_vColors[0]);
+        g_pRenderer->renderBorder(outerBox, borderCol, outThick, OUTERROUND, fade.a->value() * data.opacity);
 
         if (passwordLength != 0 && !checkWaiting && hiddenInputState.enabled) {
             CBox     outerBoxScaled = outerBox;
