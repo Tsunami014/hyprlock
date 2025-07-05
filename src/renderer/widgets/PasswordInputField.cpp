@@ -48,6 +48,7 @@ void CPasswordInputField::configure(const std::unordered_map<std::string, std::a
         rounding                 = std::any_cast<Hyprlang::INT>(prop.at("rounding"));
         configPlaceholderText    = std::any_cast<Hyprlang::STRING>(prop.at("placeholder_text"));
         configFailText           = std::any_cast<Hyprlang::STRING>(prop.at("fail_text"));
+        configCheckingText       = prop.count("checking_text") ? std::any_cast<Hyprlang::STRING>(prop.at("checking_text")) : std::string("Checking...");
         fontFamily               = std::any_cast<Hyprlang::STRING>(prop.at("font_family"));
         colorConfig.outer        = CGradientValueData::fromAnyPv(prop.at("outer_color"));
         colorConfig.inner        = std::any_cast<Hyprlang::INT>(prop.at("inner_color"));
@@ -173,10 +174,10 @@ void CPasswordInputField::updateFade() {
 }
 
 void CPasswordInputField::updateDots() {
-    if (dots.currentAmount->goal() == passwordLength)
+    if (showChecking)
         return;
 
-    if (checkWaiting)
+    if (dots.currentAmount->goal() == passwordLength)
         return;
 
     if (passwordLength == 0)
@@ -197,6 +198,8 @@ bool CPasswordInputField::draw(const SRenderData& data) {
     passwordLength = g_pHyprlock->getPasswordBufferDisplayLen();
     checkWaiting   = g_pAuth->checkWaiting();
     displayFail    = g_pAuth->m_bDisplayFailText;
+    showChecking   = checkWaiting;
+    displayPasswordLength = showChecking ? 0 : passwordLength;
 
     // --- PATCH: Render fail text above input box ---
     if (displayFail && !configFailText.empty()) {
@@ -289,7 +292,7 @@ bool CPasswordInputField::draw(const SRenderData& data) {
     const int ROUND = roundingForBox(inputFieldBox, rounding);
     g_pRenderer->renderRect(inputFieldBox, innerCol, ROUND);
 
-    if (!hiddenInputState.enabled) {
+    if (!hiddenInputState.enabled && !showChecking) {
         const int RECTPASSSIZE = std::nearbyint(inputFieldBox.h * dots.size * 0.5f) * 2.f;
         Vector2D  passSize{RECTPASSSIZE, RECTPASSSIZE};
         int       passSpacing = std::floor(passSize.x * dots.spacing);
@@ -356,7 +359,7 @@ bool CPasswordInputField::draw(const SRenderData& data) {
     }
 
     // Only show placeholder/fail text inside the box if not displaying fail label above
-    if (!displayFail && passwordLength == 0 && !checkWaiting && !placeholder.resourceID.empty()) {
+    if (!displayFail && displayPasswordLength == 0 && !showChecking && !placeholder.resourceID.empty()) {
         SPreloadedAsset* currAsset = nullptr;
 
         if (!placeholder.asset)
@@ -376,6 +379,42 @@ bool CPasswordInputField::draw(const SRenderData& data) {
             glDisable(GL_SCISSOR_TEST);
         } else
             forceReload = true;
+    }
+
+    // Show 'Checking...' text when authenticating
+    if (showChecking && !configCheckingText.empty()) {
+        std::string checkingResourceID = "checkingtext:" + configCheckingText +
+            std::to_string(reinterpret_cast<uintptr_t>(this)) +
+            std::to_string(colorState.font.r) +
+            std::to_string(colorState.font.g) +
+            std::to_string(colorState.font.b) +
+            std::to_string(colorState.font.a);
+
+        SPreloadedAsset* checkingAsset = g_pRenderer->asyncResourceGatherer->getAssetByID(checkingResourceID);
+        if (!checkingAsset) {
+            CAsyncResourceGatherer::SPreloadRequest request;
+            request.id = checkingResourceID;
+            request.asset = configCheckingText;
+            request.type = CAsyncResourceGatherer::eTargetType::TARGET_TEXT;
+            request.props["font_family"] = fontFamily;
+            request.props["color"] = colorState.font;
+            request.props["font_size"] = (int)size->value().y / 4;
+            request.callback = [m_self = m_self] {
+                if (const auto SELF = m_self.lock(); SELF)
+                    g_pHyprlock->renderOutput(SELF->outputStringPort);
+            };
+            g_pRenderer->asyncResourceGatherer->requestAsyncAssetPreload(request);
+            forceReload = true;
+        } else {
+            const Vector2D ASSETPOS = inputFieldBox.pos() + inputFieldBox.size() / 2.0 - checkingAsset->texture.m_vSize / 2.0;
+            const CBox     ASSETBOX{ASSETPOS, checkingAsset->texture.m_vSize};
+
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(inputFieldBox.x, inputFieldBox.y, inputFieldBox.w, inputFieldBox.h);
+            g_pRenderer->renderTexture(ASSETBOX, checkingAsset->texture, data.opacity * fade.a->value(), 0);
+            glScissor(0, 0, viewport.x, viewport.y);
+            glDisable(GL_SCISSOR_TEST);
+        }
     }
 
     return redrawShadow || forceReload;
@@ -399,7 +438,13 @@ void CPasswordInputField::updatePlaceholder() {
 
     placeholder.failedAttempts = g_pAuth->getFailedAttempts();
 
-    std::string newText = (displayFail) ? formatString(configFailText).formatted : formatString(configPlaceholderText).formatted;
+    std::string newText;
+    if (displayFail)
+        newText = formatString(configFailText).formatted;
+    else if (showChecking)
+        newText = configCheckingText;
+    else
+        newText = formatString(configPlaceholderText).formatted;
 
     // if the text is unchanged we don't need to do anything, unless we are swapping font color
     const auto ALLOWCOLORSWAP = outThick == 0 && colorConfig.swapFont;

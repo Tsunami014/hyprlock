@@ -44,8 +44,10 @@ class CPasswordInputField : public IWidget {
     bool                     redrawShadow = false;
     bool                     checkWaiting = false;
     bool                     displayFail  = false;
+    bool                     showChecking = false;
 
     size_t                   passwordLength = 0;
+    size_t                   displayPasswordLength = 0;
 
     PHLANIMVAR<Vector2D>     size;
     Vector2D                 pos;
@@ -53,7 +55,7 @@ class CPasswordInputField : public IWidget {
     Vector2D                 configPos;
     Vector2D                 configSize;
 
-    std::string              halign, valign, configFailText, outputStringPort, configPlaceholderText, fontFamily;
+    std::string              halign, valign, configFailText, outputStringPort, configPlaceholderText, fontFamily, configCheckingText;
     uint64_t                 configFailTimeoutMs = 2000;
 
     int                      outThick, rounding;

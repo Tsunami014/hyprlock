@@ -1,8 +1,14 @@
 # hyprlock
 Hyprland's simple, yet multi-threaded and GPU-accelerated screen locking utility.
 
-# My modification
+# What I changed
 I modified it from the original to let you type your password while it's checking it, like Linux Mint's functionality.
+
+- When authenticating, the password input box is cleared, and the placeholder text changes to "Checking..." (configurable).
+- You can configure the text shown during authentication with the `checking_text` option in your input-field config, e.g.:
+  ```
+  checking_text = Checking...
+  ```
 
 ## Features
  - Uses the ext-session-lock protocol
