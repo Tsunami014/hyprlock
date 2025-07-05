@@ -24,7 +24,7 @@ static PFNEGLQUERYDMABUFMODIFIERSEXTPROC   eglQueryDmaBufModifiersEXT   = nullpt
 
 //
 std::string CScreencopyFrame::getResourceId(SP<COutput> pOutput) {
-    return RESOURCEIDPREFIX + std::format(":{}-{}x{}", pOutput->stringPort, pOutput->size.x, pOutput->size.y);
+    return RESOURCEIDPREFIX + ":" + pOutput->stringPort + "-" + std::to_string(pOutput->size.x) + "x" + std::to_string(pOutput->size.y);
 }
 
 CScreencopyFrame::CScreencopyFrame(SP<COutput> pOutput) : m_outputRef(pOutput) {

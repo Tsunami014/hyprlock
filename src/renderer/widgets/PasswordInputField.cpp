@@ -23,43 +23,43 @@ void CPasswordInputField::registerSelf(const ASP<CPasswordInputField>& self) {
     m_self = self;
 }
 
-void CPasswordInputField::configure(const std::unordered_map<std::string, std::any>& props, const SP<COutput>& pOutput) {
+void CPasswordInputField::configure(const std::unordered_map<std::string, std::any>& prop, const SP<COutput>& pOutput) {
     reset();
 
     outputStringPort = pOutput->stringPort;
     viewport         = pOutput->getViewport();
 
-    shadow.configure(m_self, props, viewport);
+    shadow.configure(m_self, prop, viewport);
 
     try {
-        pos                      = CLayoutValueData::fromAnyPv(props.at("position"))->getAbsolute(viewport);
-        configSize               = CLayoutValueData::fromAnyPv(props.at("size"))->getAbsolute(viewport);
-        halign                   = std::any_cast<Hyprlang::STRING>(props.at("halign"));
-        valign                   = std::any_cast<Hyprlang::STRING>(props.at("valign"));
-        outThick                 = std::any_cast<Hyprlang::INT>(props.at("outline_thickness"));
-        dots.size                = std::any_cast<Hyprlang::FLOAT>(props.at("dots_size"));
-        dots.spacing             = std::any_cast<Hyprlang::FLOAT>(props.at("dots_spacing"));
-        dots.center              = std::any_cast<Hyprlang::INT>(props.at("dots_center"));
-        dots.rounding            = std::any_cast<Hyprlang::INT>(props.at("dots_rounding"));
-        dots.textFormat          = std::any_cast<Hyprlang::STRING>(props.at("dots_text_format"));
-        fadeOnEmpty              = std::any_cast<Hyprlang::INT>(props.at("fade_on_empty"));
-        fadeTimeoutMs            = std::any_cast<Hyprlang::INT>(props.at("fade_timeout"));
-        hiddenInputState.enabled = std::any_cast<Hyprlang::INT>(props.at("hide_input"));
-        rounding                 = std::any_cast<Hyprlang::INT>(props.at("rounding"));
-        configPlaceholderText    = std::any_cast<Hyprlang::STRING>(props.at("placeholder_text"));
-        configFailText           = std::any_cast<Hyprlang::STRING>(props.at("fail_text"));
-        fontFamily               = std::any_cast<Hyprlang::STRING>(props.at("font_family"));
-        colorConfig.outer        = CGradientValueData::fromAnyPv(props.at("outer_color"));
-        colorConfig.inner        = std::any_cast<Hyprlang::INT>(props.at("inner_color"));
-        colorConfig.font         = std::any_cast<Hyprlang::INT>(props.at("font_color"));
-        colorConfig.fail         = CGradientValueData::fromAnyPv(props.at("fail_color"));
-        colorConfig.check        = CGradientValueData::fromAnyPv(props.at("check_color"));
-        colorConfig.both         = CGradientValueData::fromAnyPv(props.at("bothlock_color"));
-        colorConfig.caps         = CGradientValueData::fromAnyPv(props.at("capslock_color"));
-        colorConfig.num          = CGradientValueData::fromAnyPv(props.at("numlock_color"));
-        colorConfig.invertNum    = std::any_cast<Hyprlang::INT>(props.at("invert_numlock"));
-        colorConfig.swapFont     = std::any_cast<Hyprlang::INT>(props.at("swap_font_color"));
-        colorConfig.hiddenBase   = std::any_cast<Hyprlang::INT>(props.at("hide_input_base_color"));
+        pos                      = CLayoutValueData::fromAnyPv(prop.at("position"))->getAbsolute(viewport);
+        configSize               = CLayoutValueData::fromAnyPv(prop.at("size"))->getAbsolute(viewport);
+        halign                   = std::any_cast<Hyprlang::STRING>(prop.at("halign"));
+        valign                   = std::any_cast<Hyprlang::STRING>(prop.at("valign"));
+        outThick                 = std::any_cast<Hyprlang::INT>(prop.at("outline_thickness"));
+        dots.size                = std::any_cast<Hyprlang::FLOAT>(prop.at("dots_size"));
+        dots.spacing             = std::any_cast<Hyprlang::FLOAT>(prop.at("dots_spacing"));
+        dots.center              = std::any_cast<Hyprlang::INT>(prop.at("dots_center"));
+        dots.rounding            = std::any_cast<Hyprlang::INT>(prop.at("dots_rounding"));
+        dots.textFormat          = std::any_cast<Hyprlang::STRING>(prop.at("dots_text_format"));
+        fadeOnEmpty              = std::any_cast<Hyprlang::INT>(prop.at("fade_on_empty"));
+        fadeTimeoutMs            = std::any_cast<Hyprlang::INT>(prop.at("fade_timeout"));
+        hiddenInputState.enabled = std::any_cast<Hyprlang::INT>(prop.at("hide_input"));
+        rounding                 = std::any_cast<Hyprlang::INT>(prop.at("rounding"));
+        configPlaceholderText    = std::any_cast<Hyprlang::STRING>(prop.at("placeholder_text"));
+        configFailText           = std::any_cast<Hyprlang::STRING>(prop.at("fail_text"));
+        fontFamily               = std::any_cast<Hyprlang::STRING>(prop.at("font_family"));
+        colorConfig.outer        = CGradientValueData::fromAnyPv(prop.at("outer_color"));
+        colorConfig.inner        = std::any_cast<Hyprlang::INT>(prop.at("inner_color"));
+        colorConfig.font         = std::any_cast<Hyprlang::INT>(prop.at("font_color"));
+        colorConfig.fail         = CGradientValueData::fromAnyPv(prop.at("fail_color"));
+        colorConfig.check        = CGradientValueData::fromAnyPv(prop.at("check_color"));
+        colorConfig.both         = CGradientValueData::fromAnyPv(prop.at("bothlock_color"));
+        colorConfig.caps         = CGradientValueData::fromAnyPv(prop.at("capslock_color"));
+        colorConfig.num          = CGradientValueData::fromAnyPv(prop.at("numlock_color"));
+        colorConfig.invertNum    = std::any_cast<Hyprlang::INT>(prop.at("invert_numlock"));
+        colorConfig.swapFont     = std::any_cast<Hyprlang::INT>(prop.at("swap_font_color"));
+        colorConfig.hiddenBase   = std::any_cast<Hyprlang::INT>(prop.at("hide_input_base_color"));
     } catch (const std::bad_any_cast& e) {
         RASSERT(false, "Failed to construct CPasswordInputField: {}", e.what()); //
     } catch (const std::out_of_range& e) {
@@ -86,7 +86,7 @@ void CPasswordInputField::configure(const std::unordered_map<std::string, std::a
     pos = posFromHVAlign(viewport, size->goal(), configPos, halign, valign);
 
     if (!dots.textFormat.empty()) {
-        dots.textResourceID = std::format("input:{}-{}", (uintptr_t)this, dots.textFormat);
+        dots.textResourceID = "input:" + std::to_string(reinterpret_cast<uintptr_t>(this)) + "-" + dots.textFormat;
         CAsyncResourceGatherer::SPreloadRequest request;
         request.id                   = dots.textResourceID;
         request.asset                = dots.textFormat;
@@ -113,6 +113,17 @@ void CPasswordInputField::reset() {
 
     if (placeholder.asset)
         g_pRenderer->asyncResourceGatherer->unloadAsset(placeholder.asset);
+
+    // PATCH: Clean up fail text asset if present
+    std::string failText = formatString(configFailText).formatted;
+    std::string failResourceID = "failtext:" + failText +
+        std::to_string(reinterpret_cast<uintptr_t>(this)) +
+        std::to_string(colorConfig.font.r) +
+        std::to_string(colorConfig.font.g) +
+        std::to_string(colorConfig.font.b) +
+        std::to_string(colorConfig.font.a);
+    if (auto failAsset = g_pRenderer->asyncResourceGatherer->getAssetByID(failResourceID); failAsset)
+        g_pRenderer->asyncResourceGatherer->unloadAsset(failAsset);
 
     placeholder.asset = nullptr;
     placeholder.resourceID.clear();
@@ -186,6 +197,47 @@ bool CPasswordInputField::draw(const SRenderData& data) {
     passwordLength = g_pHyprlock->getPasswordBufferDisplayLen();
     checkWaiting   = g_pAuth->checkWaiting();
     displayFail    = g_pAuth->m_bDisplayFailText;
+
+    // --- PATCH: Render fail text above input box ---
+    if (displayFail && !configFailText.empty()) {
+        // Generate a unique resource ID for the fail text asset (use fail color for uniqueness)
+        std::string failText = formatString(configFailText).formatted;
+        CHyprColor failCol = (colorConfig.fail && !colorConfig.fail->m_vColors.empty())
+            ? colorConfig.fail->m_vColors[0]
+            : CHyprColor(1.0, 0.0, 0.0, 1.0);
+        std::string failResourceID = "failtext:" + failText +
+            std::to_string(reinterpret_cast<uintptr_t>(this)) +
+            std::to_string(failCol.r) +
+            std::to_string(failCol.g) +
+            std::to_string(failCol.b) +
+            std::to_string(failCol.a);
+
+        // Request asset if not already present
+        SPreloadedAsset* failAsset = g_pRenderer->asyncResourceGatherer->getAssetByID(failResourceID);
+        if (!failAsset) {
+            CAsyncResourceGatherer::SPreloadRequest request;
+            request.id = failResourceID;
+            request.asset = failText;
+            request.type = CAsyncResourceGatherer::eTargetType::TARGET_TEXT;
+            request.props["font_family"] = fontFamily;
+            request.props["color"] = failCol;
+            request.props["font_size"] = (int)size->value().y / 4;
+            request.callback = [m_self = m_self] {
+                if (const auto SELF = m_self.lock(); SELF)
+                    g_pHyprlock->renderOutput(SELF->outputStringPort);
+            };
+            g_pRenderer->asyncResourceGatherer->requestAsyncAssetPreload(request);
+            forceReload = true;
+        } else {
+            // Calculate position above the input box (subtract height and padding)
+            Vector2D failSize = failAsset->texture.m_vSize;
+            double padding = size->value().y * 0.25;
+            Vector2D failPos = pos + Vector2D{(size->value().x - failSize.x) / 2.0, size->value().y + padding};
+            CBox failBox{failPos, failSize};
+            g_pRenderer->renderTexture(failBox, failAsset->texture, data.opacity * fade.a->value(), 0);
+        }
+    }
+    // --- END PATCH ---
 
     updateFade();
     updateDots();
@@ -301,7 +353,8 @@ bool CPasswordInputField::draw(const SRenderData& data) {
         }
     }
 
-    if (passwordLength == 0 && !checkWaiting && !placeholder.resourceID.empty()) {
+    // Only show placeholder/fail text inside the box if not displaying fail label above
+    if (!displayFail && passwordLength == 0 && !checkWaiting && !placeholder.resourceID.empty()) {
         SPreloadedAsset* currAsset = nullptr;
 
         if (!placeholder.asset)
@@ -352,7 +405,12 @@ void CPasswordInputField::updatePlaceholder() {
         return;
 
     const auto NEWRESOURCEID =
-        std::format("placeholder:{}{}{}{}{}{}", placeholder.currentText, (uintptr_t)this, colorState.font.r, colorState.font.g, colorState.font.b, colorState.font.a);
+        "placeholder:" + placeholder.currentText +
+        std::to_string(reinterpret_cast<uintptr_t>(this)) +
+        std::to_string(colorState.font.r) +
+        std::to_string(colorState.font.g) +
+        std::to_string(colorState.font.b) +
+        std::to_string(colorState.font.a);
 
     if (placeholder.resourceID == NEWRESOURCEID)
         return;

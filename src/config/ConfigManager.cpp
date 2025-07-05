@@ -65,7 +65,7 @@ static Hyprlang::CParseResult configHandleLayoutOption(const char* v, void** dat
     const auto DATA  = (CLayoutValueData*)(*data);
     const auto SPLIT = VALUE.find(',');
     if (SPLIT == std::string::npos) {
-        result.setError(std::format("expected two comma seperated values, got {}", VALUE).c_str());
+        result.setError(("expected two comma seperated values, got " + VALUE).c_str());
         return result;
     }
 
@@ -75,7 +75,7 @@ static Hyprlang::CParseResult configHandleLayoutOption(const char* v, void** dat
         rhs = rhs.substr(1);
 
     if (lhs.contains(",") || rhs.contains(",")) {
-        result.setError(std::format("too many arguments in {}", VALUE).c_str());
+        result.setError(("too many arguments in " + VALUE).c_str());
         return result;
     }
 
@@ -535,7 +535,13 @@ std::optional<std::string> CConfigManager::handleSource(const std::string& comma
     const auto CURRENTDIR = std::filesystem::path(configCurrentPath).parent_path().string();
 
     if (auto r = glob(absolutePath(rawpath, CURRENTDIR).c_str(), GLOB_TILDE, nullptr, glob_buf.get()); r != 0) {
-        std::string err = std::format("source= globbing error: {}", r == GLOB_NOMATCH ? "found no match" : GLOB_ABORTED ? "read error" : "out of memory");
+        std::string err = "source= globbing error: ";
+        if (r == GLOB_NOMATCH)
+            err += "found no match";
+        else if (r == GLOB_ABORTED)
+            err += "read error";
+        else
+            err += "out of memory";
         Debug::log(ERR, "{}", err);
         return err;
     }
