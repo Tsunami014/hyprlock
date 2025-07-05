@@ -1,6 +1,9 @@
 # hyprlock
 Hyprland's simple, yet multi-threaded and GPU-accelerated screen locking utility.
 
+# My modification
+I modified it from the original to let you type your password while it's checking it, like Linux Mint's functionality.
+
 ## Features
  - Uses the ext-session-lock protocol
  - Support for fractional-scale
@@ -17,13 +20,6 @@ Hyprland's simple, yet multi-threaded and GPU-accelerated screen locking utility
 
 ## Docs / Configuration
 [See the wiki](https://wiki.hyprland.org/Hypr-Ecosystem/hyprlock/)
-
-## Arch install
-```sh
-pacman -S hyprlock # binary x86 tagged release
-# or
-yay -S hyprlock-git # compiles from latest source
-```
 
 ## Building
 
