@@ -26,6 +26,8 @@ class CPasswordInputField : public IWidget {
     virtual void onHover(const Vector2D& pos);
     virtual CBox getBoundingBoxWl() const;
 
+    void setShowCheckingOverlay(bool show);
+
     void         reset();
     void         onFadeOutTimer();
 
@@ -45,9 +47,13 @@ class CPasswordInputField : public IWidget {
     bool                     checkWaiting = false;
     bool                     displayFail  = false;
     bool                     showChecking = false;
+    bool                     showCheckingOverlay = false;
 
     size_t                   passwordLength = 0;
     size_t                   displayPasswordLength = 0;
+
+    // Timer for 'Checking...' overlay
+    ASP<CTimer>              checkingOverlayTimer = nullptr;
 
     PHLANIMVAR<Vector2D>     size;
     Vector2D                 pos;

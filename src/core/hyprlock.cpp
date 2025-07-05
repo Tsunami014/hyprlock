@@ -3,6 +3,7 @@
 #include "../helpers/Log.hpp"
 #include "../config/ConfigManager.hpp"
 #include "../renderer/Renderer.hpp"
+#include "../renderer/widgets/PasswordInputField.hpp"
 #include "../auth/Auth.hpp"
 #include "../auth/Fingerprint.hpp"
 #include "Egl.hpp"
@@ -629,13 +630,9 @@ void CHyprlock::onKey(uint32_t key, bool down) {
         }
     }
 
-    if (g_pAuth->checkWaiting()) {
-        renderAllOutputs();
-        return;
-    }
+    // Allow typing while checking, but block Enter/Return in handleKeySym instead
 
-    if (g_pAuth->m_bDisplayFailText)
-        g_pAuth->resetDisplayFail();
+    // Do not hide fail text on keypress; let its timer control visibility
 
     if (down) {
         m_bCapsLock = xkb_state_mod_name_is_active(g_pSeatManager->m_pXKBState, XKB_MOD_NAME_CAPS, XKB_STATE_MODS_LOCKED);
@@ -669,6 +666,15 @@ void CHyprlock::handleKeySym(xkb_keysym_t sym, bool composed) {
 
         m_sPasswordState.passBuffer = "";
     } else if (SYM == XKB_KEY_Return || SYM == XKB_KEY_KP_Enter) {
+        if (g_pAuth->checkWaiting()) {
+            Debug::log(LOG, "Enter pressed while checking, ignoring.");
+            return;
+        }
+
+        // Hide fail text immediately when Enter is pressed, but only if visible
+        if (g_pAuth->m_bDisplayFailText)
+            g_pAuth->resetDisplayFail();
+
         Debug::log(LOG, "Authenticating");
 
         static const auto IGNOREEMPTY = g_pConfigManager->getValue<Hyprlang::INT>("general:ignore_empty_input");
@@ -679,6 +685,19 @@ void CHyprlock::handleKeySym(xkb_keysym_t sym, bool composed) {
         }
 
         g_pAuth->submitInput(m_sPasswordState.passBuffer);
+
+        // Hide checking overlay on all PasswordInputField widgets after Enter (when not checking)
+        for (auto& o : m_vOutputs) {
+            if (!o->m_sessionLockSurface)
+                continue;
+            const auto widgets = g_pRenderer->getOrCreateWidgetsFor(*o->m_sessionLockSurface);
+            for (const auto& widget : widgets) {
+                // Use RTTI to check for PasswordInputField
+                auto* pw = dynamic_cast<CPasswordInputField*>(widget.get());
+                if (pw)
+                    pw->setShowCheckingOverlay(false);
+            }
+        }
     } else if (SYM == XKB_KEY_BackSpace || SYM == XKB_KEY_Delete) {
         if (m_sPasswordState.passBuffer.length() > 0) {
             // handle utf-8

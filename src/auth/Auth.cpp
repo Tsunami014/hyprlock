@@ -119,6 +119,8 @@ void CAuth::enqueueFail(const std::string& failText, eAuthImplementations implTy
 
 void CAuth::resetDisplayFail() {
     g_pAuth->m_bDisplayFailText = false;
-    m_resetDisplayFailTimer->cancel();
-    m_resetDisplayFailTimer.reset();
+    if (m_resetDisplayFailTimer) {
+        m_resetDisplayFailTimer->cancel();
+        m_resetDisplayFailTimer.reset();
+    }
 }
